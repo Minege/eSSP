@@ -1,6 +1,6 @@
-# Encrypted Smiley Secure Protocol 6 - eSSP6
-
-### In Python 3
+# Encrypted Smiley Secure Protocol - eSSP
+## In Python 3
+### eSSP version : 6
 
 Officialy Support : 
 * NV200
