@@ -1,4 +1,4 @@
-#include "../inc/SSPComs.h"
+#include "inc/SSPComs.h"
 #include "port_linux.h"
 #include <stdlib.h>
 #include <stdio.h>

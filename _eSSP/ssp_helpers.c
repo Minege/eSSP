@@ -4,7 +4,7 @@
 #include "port_win32.h"
 #include "port_win32_ssp.h"
 #else
-#include "../inc/SSPComs.h"
+#include "inc/SSPComs.h"
 #endif
 
 static SSP_RESPONSE_ENUM _ssp_return_values(SSP_COMMAND * sspC)

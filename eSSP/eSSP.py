@@ -104,7 +104,6 @@ class eSSP:
         self.actions_args = {}
         self.response_data = {}
         self.response_data['getnoteamount_response'] = 9999 # There can't be 9999 notes in the storage
-        self.essp = cdll.LoadLibrary("libessp.so") # Loading the C Library
         self.sspC = self.essp.ssp_init(com_port.encode(), spp_address.encode())
         self.poll = SSP_POLL_DATA6()
         setup_req = SSP6_SETUP_REQUEST_DATA()

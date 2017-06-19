@@ -5,6 +5,7 @@
 Officialy Support : 
 * NV200
 * NV11
+* NV10
 
 Maybe that other models works, but we haven't tested them.
 
