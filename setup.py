@@ -5,6 +5,11 @@ from setuptools.command.install import install
 from distutils.command.build import build
 from subprocess import call
 from multiprocessing import cpu_count
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = open('README.md').read()
 
 BASEPATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,8 +50,9 @@ class ESSPInstall(install):
 
 
 setup(name="eSSP6",
-        version="1",
+        version="1.0.1",
         description="Encrypted Smiley Secure Protocol Python 3 Implementation",
+	long_description=long_description,
         author="Loan",
         author_email="minege@protonmail.com",
         platforms=["cygwin","osx"],
