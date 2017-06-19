@@ -44,8 +44,8 @@ class ESSPInstall(install):
         self.copy_tree(self.build_lib, self.install_lib)
 
 
-setup(name="eSSP",
-        version="0.1",
+setup(name="eSSP6",
+        version="1",
         description="Encrypted Smiley Secure Protocol Python 3 Implementation",
         author="Loan",
         author_email="minege@protonmail.com",
