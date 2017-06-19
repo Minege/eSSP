@@ -6,12 +6,6 @@ from distutils.command.build import build
 from subprocess import call
 from multiprocessing import cpu_count
 
-try:
-    import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
-except(IOError, ImportError):
-    long_description = "The description is avaible on the github repository"
-
 BASEPATH = os.path.dirname(os.path.abspath(__file__))
 
 class ESSPBuild(build):
@@ -51,13 +45,13 @@ class ESSPInstall(install):
 
 
 setup(name="eSSP6",
-        version="1.0.0",
+        version="1.0.2",
         description="Encrypted Smiley Secure Protocol Python 3 Implementation",
 	long_description=long_description,
         author="Loan",
         author_email="minege@protonmail.com",
         platforms=["cygwin","osx"],
-        license="GPL",
+        license="MIT",
         url="https://github.com/Minege/eSSP",
         packages=find_packages(),
         cmdclass={
