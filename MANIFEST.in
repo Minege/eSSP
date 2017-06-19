@@ -1,0 +1,6 @@
+#documentation
+recursive-include _eSSP *
+
+#Misc
+include README.MD
+include LICENSE.txt
