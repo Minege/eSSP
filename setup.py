@@ -45,10 +45,10 @@ class ESSPInstall(install):
 
 
 setup(name="eSSP6",
-        version="1.0.2",
+        version="1.0.3",
         description="Encrypted Smiley Secure Protocol Python 3 Implementation",
 	long_description="Description is avaible in the github repository",
-        author="Loan",
+        author="Loan & Innovative Technology (Some of the C code)",
         author_email="minege@protonmail.com",
         platforms=["cygwin","osx"],
         license="MIT",
