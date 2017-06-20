@@ -1,7 +1,7 @@
 import threading
 from eSSP.eSSP import *  # Import the library
 
-validator = eSSP(com_port="/dev/ttyACM0", spp_address="0", nv11=False, debug=True)  # Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
+validator = eSSP(com_port="/dev/ttyUSB0", spp_address="0", nv11=False, debug=False)  # Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
 
 def system_loop(): # Looping for getting the alive signal
     while(1):
@@ -42,11 +42,10 @@ def system_loop(): # Looping for getting the alive signal
 
             validator.do_actions()
                     # ---- *** ---- #
-
-
         else: # NV200 or something else, do this ( regular read of events, can also interact with them )
             validator.parse_poll()
             validator.do_actions()
+
         sleep(0.5)
 
 t1 = threading.Thread(target=system_loop)  # Create a new thread on the Validator System Loop ( needed for the signal )
