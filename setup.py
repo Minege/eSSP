@@ -45,7 +45,7 @@ class ESSPInstall(install):
 
 
 setup(name="eSSP6",
-        version="1.0.4",
+        version="1.0.5",
         description="Encrypted Smiley Secure Protocol Python 3 Implementation",
 	long_description="Description is avaible in the github repository",
         author="Loan & Innovative Technology (Some of the C code)",
