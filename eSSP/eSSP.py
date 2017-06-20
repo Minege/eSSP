@@ -104,7 +104,7 @@ class eSSP:
         self.actions_args = {}
         self.response_data = {}
         self.response_data['getnoteamount_response'] = 9999 # There can't be 9999 notes in the storage
-        self.sspC = self.essp.ssp_init(com_port.encode(), spp_address.encode())
+        self.sspC = self.essp.ssp_init(com_port.encode(), spp_address.encode(), debug)
         self.poll = SSP_POLL_DATA6()
         setup_req = SSP6_SETUP_REQUEST_DATA()
         #Check if the validator is present
