@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from ctypes import *
 from time import sleep
-from constants import *
+from .constants import *
 
 # CONSTANTS FOR SIGNALS AND COMMANDS
 
