@@ -28,8 +28,9 @@ Maybe that other models works, but we haven't tested them.
 ## Example
 ### Can be found in ex1.py
 
-
-
+## Running example 1 with a NV200 :
+Set to storage 10 CHF and 20 CHF, putting 10 CHF and 20 CHF, and payout 10 CHF and 20 CHF.
+[![asciicast](https://asciinema.org/a/GgjOifW9VxCIjJjRPXMXDCUIv.png)](https://asciinema.org/a/GgjOifW9VxCIjJjRPXMXDCUIv)
 
 
 
