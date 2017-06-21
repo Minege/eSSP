@@ -2,8 +2,9 @@ import threading
 from eSSP.constants import *
 from eSSP import eSSP  # Import the library
 from ctypes import *
+from time import sleep
 
-validator = eSSP(com_port="/dev/ttyUSB0", spp_address="0", nv11=False, debug=False)  # Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
+validator = eSSP(com_port="/dev/ttyUSB0", spp_address="0", nv11=False, debug=True)  # Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
 
 def system_loop(): # Looping for getting the alive signal
     while(1):
