@@ -33,7 +33,7 @@ Maybe that other models works, but we haven't tested them.
 
 
 
-**Donations are always appreciated!**
+**If you like my work, please consider donating**
 
 ETH : 0x821F26E5B65de91742B9FeA7c71874DAa78c5687
 
