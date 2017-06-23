@@ -75,7 +75,7 @@ class eSSP:
             print("Firmware %s "%(setup_req.FirmwareVersion.decode('utf8')))
             print("Channels : ")
             for i,channel in enumerate(setup_req.ChannelData):
-                print("Channel %s :  %s %s"%(str(i+1),str(channel.value),str(channel.cc)))
+                print("Channel %s :  %s %s"%(str(i+1),str(channel.value),channel.cc.decode()))
 
         #Enable the validator
         if self.essp.ssp6_enable(self.sspC) != SSP_RESPONSE_OK:
@@ -220,16 +220,16 @@ class eSSP:
                     return (0,0,events.event)
             elif events.event == SSP_POLL_READ:
                 if events.data1 > 0:
-                    self.print_debug("Note Read %s %s"%(events.data1,events.cc))
-                    return (events.data1, events.cc, events.event)
+                    self.print_debug("Note Read %s %s"%(events.data1,events.cc.decode()))
+                    return (events.data1, events.cc.decode(), events.event)
             elif events.event == SSP_POLL_CREDIT:
-                self.print_debug("Credit %s %s"%(events.data1,events.cc))
-                return (events.data1, events.cc, events.event)
+                self.print_debug("Credit %s %s"%(events.data1,events.cc.decode()))
+                return (events.data1, events.cc.decode(), events.event)
             elif events.event == SSP_POLL_INCOMPLETE_PAYOUT:
-                self.print_debug("Incomplete payout %s of %s %s" % (events.data1,events.data2, events.cc))
+                self.print_debug("Incomplete payout %s of %s %s" % (events.data1,events.data2, events.cc.decode()))
                 return (0,0,events.event)
             elif events.event == SSP_POLL_INCOMPLETE_FLOAT:
-                self.print_debug("Incomplete float %s of %s %s"%(events.data1,events.data2,events.cc))
+                self.print_debug("Incomplete float %s of %s %s"%(events.data1,events.data2,events.cc.decode()))
                 return (0,0,events.event)
             elif events.event == SSP_POLL_REJECTING:
                 # Do nothing
@@ -256,8 +256,8 @@ class eSSP:
                 self.print_debug("VALIDATOR DISABLED")
                 return (0,0,events.event)
             elif events.event == SSP_POLL_FRAUD_ATTEMPT:
-                self.print_debug("Fraud Attempt %s %s"%(events.data1,events.cc))
-                return (0,0,events.event)
+                self.print_debug("Fraud Attempt %s %s"%(events.data1,events.cc.decode()))
+                return (events.data1,events.cc.decode(),events.event)
             elif events.event == SSP_POLL_STACKER_FULL:
                 self.print_debug("Stacker Full")
                 return (0,0,events.event)
