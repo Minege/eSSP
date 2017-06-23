@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from ctypes import *
 from time import sleep
+import threading
+
 from .constants import *
 
 # CONSTANTS FOR SIGNALS AND COMMANDS
@@ -97,6 +99,8 @@ class eSSP:
                 self.print_debug("Inhibits Failed")
                 self.close()
                 return False
+        t1 = threading.Thread(target=self.system_loop)
+        t1.start()
 
     def close(self):
         """Close the connection"""

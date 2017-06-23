@@ -44,30 +44,11 @@ from time import sleep
 
 validator = eSSP(com_port="/dev/ttyUSB0", spp_address="0", nv11=False, debug=True)  # Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
 
-def system_loop(): # Looping for getting the alive signal
+def event_loop():
     while(1):
-        rsp_status = validator.essp.ssp6_poll(validator.sspC, byref(validator.poll)) # Get the pool
-        if rsp_status != SSP_RESPONSE_OK: # If there's a problem, check wath is it
-            if rsp_status == SSP_RESPONSE_TIMEOUT: # Timeout
-                validator.print_debug("SSP Poll Timeout")
-                validator.close()
-                exit(0)
-            else:
-                if rsp_status == 0xFA:
-                    #The validator has responded with key not set, so we should try to negotiate one
-                    if validator.essp.ssp6_setup_encryption(validator.sspC, c_ulonglong(0x123456701234567)) == SSP_RESPONSE_OK:
-                        validator.print_debug("Encryption Setup")
-                    else:
-                        validator.print_debug("Encryption Failed")
-
-                else:
-                    validator.print_debug("SSP Poll Error",rsp_status) # Not theses two, stop the program
-                    return False
-
-
                     # ---- Example of interaction with events ---- #
-        if validator.nv11: # If the model is an NV11, interact specially with the poll, but that's just for this example
-            (note, currency,event) = validator.parse_poll() # Get event
+        if validator.nv11: # If the model is an NV11, put every 100 note in the storage, and others in the stack(cashbox), but that's just for this example
+            (note, currency,event) = validator.get_last_event()
             if note == 0 or currency == 0 or event == 0:
                 pass # Operation that do not send money info, we don't do anything with it
             else:
@@ -80,16 +61,9 @@ def system_loop(): # Looping for getting the alive signal
                     validator.set_route_storage(100) # Route to storage
                     validator.do_actions()
                     validator.set_route_cashbox(50) # Everything under or equal to 50 to cashbox ( NV11 )
-
-            validator.do_actions()
-                    # ---- *** ---- #
-        else: # NV200 or something else, do this ( regular read of events, can also interact with them )
-            validator.parse_poll()
-            validator.do_actions()
-
         sleep(0.5)
 
-t1 = threading.Thread(target=system_loop)  # Create a new thread on the Validator System Loop ( needed for the signal )
+t1 = threading.Thread(target=event_loop)  # Create a new thread on the Validator System Loop ( needed for the signal )
 t1.setDaemon(True)  # Set the thread as daemon because it don't catch the KeyboardInterrupt, so it will stop when we cut the main thread
 t1.start()  # Start the validator system loop thread ( Needed for starting sending action )
 
