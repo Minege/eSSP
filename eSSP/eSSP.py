@@ -38,6 +38,7 @@ class eSSP:
         self.actions = ""
         self.actions_args = {}
         self.response_data = {}
+        self.events = []
         self.response_data['getnoteamount_response'] = 9999 # There can't be 9999 notes in the storage
         self.sspC = self.essp.ssp_init(com_port.encode(), spp_address.encode(), debug)
         self.poll = SSP_POLL_DATA6()
@@ -296,6 +297,35 @@ class eSSP:
                 return (0,0,events.event)
 
         return (0,0,NO_EVENT)
+    	
+    def system_loop(self): # Looping for getting the alive signal ( obligation in eSSP6 )
+        while(1):
+            rsp_status = self.essp.ssp6_poll(self.sspC, byref(self.poll)) # Get the pool
+            if rsp_status != SSP_RESPONSE_OK: # If there's a problem, check wath is it
+                if rsp_status == SSP_RESPONSE_TIMEOUT: # Timeout
+                    self.print_debug("SSP Poll Timeout")
+                    self.close()
+                    exit(0)
+                else:
+                    if rsp_status == 0xFA:
+                        #The self has responded with key not set, so we should try to negotiate one
+                        if self.essp.ssp6_setup_encryption(self.sspC, c_ulonglong(0x123456701234567)) == SSP_RESPONSE_OK:
+                            self.print_debug("Encryption Setup")
+                        else:
+                            self.print_debug("Encryption Failed")
+
+                    else:
+                        self.print_debug("SSP Poll Error",rsp_status) # Not theses two, stop the program
+                        return False
+            self.events.append(self.parse_poll())
+            self.do_actions()
+            sleep(0.5)
+
+    def get_last_event(self):
+        """Get the last event and delete it from the event list"""
+        event = self.events[len(self.events)-1]
+        self.events.pop(len(self.events)-1)
+        return event
 
     def set_route_cashbox(self, amount, currency="CHF"):
         """Set the bills <amount> in the cashbox
