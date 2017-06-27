@@ -1,13 +1,14 @@
 import threading
 from eSSP.constants import *
 from eSSP import eSSP  # Import the library
-from ctypes import *
 from time import sleep
 
-validator = eSSP(com_port="/dev/ttyUSB0", spp_address="0", nv11=False, debug=True)  # Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
+#  Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
+validator = eSSP(com_port="/dev/ttyUSB0", spp_address="0", nv11=False, debug=True)
+
 
 def event_loop():
-    while(1):
+    while True:
                     # ---- Example of interaction with events ---- #
         if validator.nv11: # If the model is an NV11, put every 100 note in the storage, and others in the stack(cashbox), but that's just for this example
             (note, currency,event) = validator.get_last_event()

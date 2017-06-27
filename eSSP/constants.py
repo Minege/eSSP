@@ -58,18 +58,18 @@ class Status(Enum):
     SMART_PAYOUT_BUSY = (0x03, "Smart payout is busy")
     SMART_PAYOUT_DISABLED = (0x04, "Smart payout is disabled")
 
-    def __init__(self, value, debug_message):
-        self.value = value
+    def __init__(self, code, debug_message):
+        self.code = code
         self.debug_message = debug_message
 
     def __int__(self):
-        return self.value
+        return self.code
 
     def __str__(self):
         return self.debug_message
 
     def __eq__(self, other):
-        return self.value == other
+        return self.code == other
 
 class Actions(Enum):
 
@@ -83,15 +83,15 @@ class Actions(Enum):
     GET_NOTE_AMOUNT = (7, "Get note amount")
     EMPTY_STORAGE = (8, "Empty storage & cleaning indexes")
 
-    def __init__(self, value, debug_message):
-        self.value = value
+    def __init__(self, code, debug_message):
+        self.code = code
         self.debug_message = debug_message
 
     def __int__(self):
-        return self.value
+        return self.code
 
     def __str__(self):
         return self.debug_message
 
     def __eq__(self, other):
-        return self.value == other
+        return self.code == other

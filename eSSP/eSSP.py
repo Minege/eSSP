@@ -44,7 +44,7 @@ class eSSP(object):
         self.response_data = {}
         self.events = []
         self.response_data['getnoteamount_response'] = 9999  # There can't be 9999 notes in the storage
-        self.sspC = self.essp.Status.SSP_init(com_port.encode(), spp_address.encode(), debug)
+        self.sspC = self.essp.ssp_init(com_port.encode(), spp_address.encode(), debug)
         self.poll = SspPollData6()
         setup_req = Ssp6SetupRequestData()
         # Check if the validator is present
@@ -73,7 +73,7 @@ class eSSP(object):
         if self.debug:
             print("Firmware %s " % (setup_req.FirmwareVersion.decode('utf8')))
             print("Channels : ")
-            for i,channel in enumerate(setup_req.ChannelData):
+            for i, channel in enumerate(setup_req.ChannelData):
                 print("Channel %s :  %s %s" % (str(i+1), str(channel.value), channel.cc.decode()))
 
         # Enable the validator
@@ -83,7 +83,7 @@ class eSSP(object):
 
         if setup_req.UnitType == 0x03:  # magic number
             for channel in enumerate(setup_req.ChannelData):
-                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED)
+                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED.code)
         else:
             if setup_req.UnitType == 0x06 or setup_req.UnitType == 0x07:
                 # Enable the payout unit
@@ -111,17 +111,23 @@ class eSSP(object):
     def do_actions(self):
         while self.actions:
             action = self.actions.get()  # get and delete
-            self.print_debug(Actions.action)
+            self.print_debug(action)
             if action == Actions.ROUTE_TO_CASHBOX:  # Route to cashbox
-                if self.essp.ssp6_set_route(self.sspC, self.actions_args['routec_amount'], self.actions_args['routec_currency'], Status.ENABLED) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_set_route(self.sspC, self.actions_args['routec_amount'],
+                                            self.actions_args['routec_currency'],
+                                            Status.ENABLED.code) != Status.SSP_RESPONSE_OK:
                     self.print_debug("ERROR: Route to cashbox failed")
 
             elif action == Actions.ROUTE_TO_STORAGE:  # Route to storage
-                if self.essp.ssp6_set_route(self.sspC, self.actions_args['routes_amount'], self.actions_args['routes_currency'], Status.ENABLED) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_set_route(self.sspC, self.actions_args['routes_amount'],
+                                            self.actions_args['routes_currency'],
+                                            Status.ENABLED.code) != Status.SSP_RESPONSE_OK:
                     self.print_debug("ERROR: Route to storage failed")
 
             elif action == Actions.PAYOUT:  # Payout
-                if self.essp.ssp6_payout(self.sspC, self.actions_args['payout_amount'], self.actions_args['payout_currency'], Status.SSP6_OPTION_BYTE_DO) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_payout(self.sspC, self.actions_args['payout_amount'],
+                                         self.actions_args['payout_currency'],
+                                         Status.SSP6_OPTION_BYTE_DO.code) != Status.SSP_RESPONSE_OK:
                     self.print_debug("ERROR: Payout failed")
                     # Checking the error
                     response_data = cast(self.essp.Status.SSP_get_response_data(self.sspC), POINTER(c_ubyte))
@@ -162,7 +168,8 @@ class eSSP(object):
                     self.print_debug("ERROR: Disable payout failed")
 
             elif action == Actions.GET_NOTE_AMOUNT:  # Get the note amount
-                if self.essp.ssp6_get_note_amount(self.sspC, self.actions_args['getnoteamount_amount'], self.actions_args['getnoteamount_currency']) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_get_note_amount(self.sspC, self.actions_args['getnoteamount_amount'],
+                                                  self.actions_args['getnoteamount_currency']) != Status.SSP_RESPONSE_OK:
                     self.print_debug("ERROR: Can't read the note amount")
                     self.response_data['getnoteamount_response'] = 9999  # There can't be 9999 notes
                 else:
@@ -193,7 +200,7 @@ class eSSP(object):
         if setup_req.UnitType == 0x03:  # Magic number
             # SMART Hopper requires different inhibit commands
             for channel in setup_req.ChannelData:
-                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED)
+                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED.code)
         else:
             if self.essp.ssp6_set_inhibits(self.sspC, 0xFF, 0xFF) != Status.SSP_RESPONSE_OK:  # Magic numbers here too
                 self.print_debug("Inhibits Failed")
@@ -258,23 +265,24 @@ class eSSP(object):
 
     def system_loop(self):  # Looping for getting the alive signal ( obligation in eSSP6 )
         while True:
-            rsp_status = self.essp.ssp6_poll(self.sspC, byref(self.poll)) # Get the pool
-            if rsp_status != Status.SSP_RESPONSE_OK: # If there's a problem, check wath is it
-                if rsp_status == Status.SSP_RESPONSE_TIMEOUT: # Timeout
+            rsp_status = self.essp.ssp6_poll(self.sspC, byref(self.poll))  # Get the pool
+            if rsp_status != Status.SSP_RESPONSE_OK:  # If there's a problem, check wath is it
+                if rsp_status == Status.SSP_RESPONSE_TIMEOUT:  # Timeout
                     self.print_debug("SSP Poll Timeout")
                     self.close()
                     exit(0)
                 else:
                     if rsp_status == 0xFA:
                         # The self has responded with key not set, so we should try to negotiate one
-                        if self.essp.ssp6_setup_encryption(self.sspC, c_ulonglong(0x123456701234567)) == Status.SSP_RESPONSE_OK:
+                        if self.essp.ssp6_setup_encryption(self.sspC,
+                                                           c_ulonglong(0x123456701234567)) == Status.SSP_RESPONSE_OK:
                             self.print_debug("Encryption Setup")
                         else:
                             self.print_debug("Encryption Failed")
 
                     else:
-                        self.print_debug("SSP Poll Error", rsp_status)  # Not theses two, stop the program
-                        return False
+                        self.print_debug("SSP Poll Error {}".format(rsp_status))  # Not theses two, stop the program
+                        exit(1)  # We can safely exit because it will just stop our thread
             self.events.append(self.parse_poll())
             self.do_actions()
             sleep(0.5)
@@ -287,7 +295,10 @@ class eSSP(object):
 
     def __action_helper(self, amount, currency, action, prefix):
         self.actions.put(action)
-        self.actions_args['{}_amount'.format(prefix)] = amount*100  # TODO: This is one action at time, also, i think that the validator can receive one type of command at time, so to implement : user can send multiple request without waiting, but we store them and process them every time we send to the validator ( 0.5, 0.5, 0.5, etc. )
+        self.actions_args['{}_amount'.format(prefix)] = amount*100  # TODO: This is one action at time, also,
+        # i think that the validator can receive one type of command at time,
+        # so TO IMPLEMENT: user can send multiple request without waiting,
+        # but we store them and process them every time we send commands to the validator ( 0.5, 0.5, 0.5, etc. )
         self.actions_args['{}_currency'.format(prefix)] = currency.upper().encode()
 
     def set_route_cashbox(self, amount, currency="CHF"):
