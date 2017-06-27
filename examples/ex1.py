@@ -14,11 +14,11 @@ def event_loop():
             if note == 0 or currency == 0 or event == 0:
                 pass # Operation that do not send money info, we don't do anything with it
             else:
-                if note != 4 and event == SSP_POLL_CREDIT:
+                if note != 4 and event == Status.SSP_POLL_CREDIT:
                     validator.print_debug("NOT A 100 NOTE")
-                    validator.nv11_stack()
+                    validator.nv11_stack_next_note()
                     validator.enable_validator()
-                elif note == 4 and event == SSP_POLL_READ:
+                elif note == 4 and event == Status.SSP_POLL_READ:
                     validator.print_debug("100 NOTE")
                     validator.set_route_storage(100) # Route to storage
                     validator.do_actions()
@@ -47,7 +47,7 @@ try: # Command Interpreter
             validator.reset()
         elif choice == "y":  # NV11 Payout last entered ( next available )
             print("Payout next 1")
-            validator.nv11_payout()
+            validator.nv11_payout_next_note()
         elif choice == "d":  # Disable
             validator.disable_validator()
         elif choice == "D": # Disable the payout device

@@ -81,7 +81,7 @@ class eSSP(object):
             self.print_debug("Enable Failed")
             self.close()
 
-        if setup_req.UnitType == 0x03:
+        if setup_req.UnitType == 0x03:  # magic number
             for channel in enumerate(setup_req.ChannelData):
                 self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED)
         else:
@@ -125,21 +125,21 @@ class eSSP(object):
                     self.print_debug("ERROR: Payout failed")
                     # Checking the error
                     response_data = cast(self.essp.Status.SSP_get_response_data(self.sspC), POINTER(c_ubyte))
-                    if response_data[1] == 0x01:
-                        self.print_debug("Not enough value in Smart Payout")
-                    elif response_data[1] == 0x02:
-                        self.print_debug("Can't pay exact amount")
-                    elif response_data[1] == 0x03:
-                        self.print_debug("Smart Payout is busy")
-                    elif response_data[1] == 0x04:
-                        self.print_debug("Smart Payout is Status.ENABLED")
+                    if response_data[1] == Status.SMART_PAYOUT_NOT_ENOUGH:
+                        self.print_debug(Status.SMART_PAYOUT_NOT_ENOUGH)
+                    elif response_data[1] == Status.SMART_PAYOUT_EXACT_AMOUNT:
+                        self.print_debug(Status.SMART_PAYOUT_EXACT_AMOUNT)
+                    elif response_data[1] == Status.SMART_PAYOUT_BUSY:
+                        self.print_debug(Status.SMART_PAYOUT_BUSY)
+                    elif response_data[1] == Status.SMART_PAYOUT_DISABLED:
+                        self.print_debug(Status.SMART_PAYOUT_DISABLED)
 
             elif action == Actions.PAYOUT_NEXT_NOTE_NV11:  # Payout next note ( NV11 only )
                 self.print_debug("Payout next note")
                 setup_req = Ssp6SetupRequestData()
                 if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK:
                     self.print_debug("Setup Request Failed")
-                if setup_req.UnitType != 0x07:
+                if setup_req.UnitType != 0x07:  # Maybe the version,  or something ( taken from the SDK C code )
                     self.print_debug("Payout next note is only valid for NV11")
                 if self.essp.ssp6_payout_note(self.sspC) != Status.SSP_RESPONSE_OK:
                     self.print_debug("Payout next note failed")
@@ -190,12 +190,12 @@ class eSSP(object):
         if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK:
             self.print_debug("Setup request failed")
             return False
-        if setup_req.UnitType == 0x03:
+        if setup_req.UnitType == 0x03:  # Magic number
             # SMART Hopper requires different inhibit commands
             for channel in setup_req.ChannelData:
                 self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED)
         else:
-            if self.essp.ssp6_set_inhibits(self.sspC, 0xFF, 0xFF) != Status.SSP_RESPONSE_OK:
+            if self.essp.ssp6_set_inhibits(self.sspC, 0xFF, 0xFF) != Status.SSP_RESPONSE_OK:  # Magic numbers here too
                 self.print_debug("Inhibits Failed")
                 return False
 
@@ -210,7 +210,7 @@ class eSSP(object):
 
             if events.event == Status.SSP_POLL_RESET:
                 self.print_debug("Unit Reset")
-                if self.essp.ssp6_host_protocol(self.sspC, Status.CHECKSUM_ERROR) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_host_protocol(self.sspC, 0x06) != Status.SSP_RESPONSE_OK:  # Magic number
                     self.print_debug("Host Protocol Failed")
                     self.close()
 
@@ -305,7 +305,7 @@ class eSSP(object):
         self.__action_helper(amount, currency, Actions.PAYOUT, "payout")
 
     def get_note_amount(self, amount, currency="CHF"):
-        """Payout note(s) for completing the amount passed in parameter"""
+        """Get the numbers of note of value X in the smart payout device"""
         self.__action_helper(amount, currency, Actions.GET_NOTE_AMOUNT, "getnoteamount")
 
     def reset(self):

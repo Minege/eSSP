@@ -53,6 +53,10 @@ class Status(Enum):
     COMMAND_RECAL = (0x07, "Command recall")
     SSP6_OPTION_BYTE_DO = (0x58, "Option Byte DO")
     NO_EVENT = (0xF9, "No event")
+    SMART_PAYOUT_NOT_ENOUGH = (0x01, "Not enough value in smart payout")
+    SMART_PAYOUT_EXACT_AMOUNT = (0x02, "Can't pay exact amount")
+    SMART_PAYOUT_BUSY = (0x03, "Smart payout is busy")
+    SMART_PAYOUT_DISABLED = (0x04, "Smart payout is disabled")
 
     def __init__(self, value, debug_message):
         self.value = value
