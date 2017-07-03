@@ -36,7 +36,7 @@ class SspPollData6(Structure):
 
 class eSSP(object):
     """Encrypted Smiley Secure Protocol Class"""
-    def __init__(self, com_port, spp_address="0", nv11=False, debug=False):
+    def __init__(self, com_port, ssp_address="0", nv11=False, debug=False):
         self.debug = debug
         self.nv11 = nv11
         self.actions = queue.Queue()
@@ -44,31 +44,33 @@ class eSSP(object):
         self.response_data = {}
         self.events = []
         self.response_data['getnoteamount_response'] = 9999  # There can't be 9999 notes in the storage
-        self.sspC = self.essp.ssp_init(com_port.encode(), spp_address.encode(), debug)
+        self.sspC = self.essp.ssp_init(com_port.encode(), ssp_address.encode(), debug)
         self.poll = SspPollData6()
         setup_req = Ssp6SetupRequestData()
         # Check if the validator is present
-        if self.essp.ssp6_sync(self.sspC) != Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_sync(self.sspC) != Status.SSP_RESPONSE_OK.value:
             self.print_debug("NO VALIDATOR FOUND")
             self.close()
         else:
             self.print_debug("Validator Found !")
         # Try to setup encryption
-        if self.essp.ssp6_setup_encryption(self.sspC, c_ulonglong(0x123456701234567)) == Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_setup_encryption(self.sspC, c_ulonglong(0x123456701234567)) == Status.SSP_RESPONSE_OK.value:
             self.print_debug("Encryption Setup")
         else:
             self.print_debug("Encryption Failed")
 
         # Checking the version, make sure we are using ssp version 6
-        if self.essp.ssp6_host_protocol(self.sspC, 0x06) != Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_host_protocol(self.sspC, 0x06) != Status.SSP_RESPONSE_OK.value:
             self.print_debug(self.essp.ssp6_host_protocol(self.sspC, 0x06))
             self.print_debug("Host Protocol Failed")
             self.close()
+            raise Exception("Host Protocol Failed")
 
         # Get some information about the validator
-        if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK.value:
             self.print_debug("Setup Request Failed")
             self.close()
+            raise Exception("Setup request failed")
 
         if self.debug:
             print("Firmware %s " % (setup_req.FirmwareVersion.decode('utf8')))
@@ -77,25 +79,26 @@ class eSSP(object):
                 print("Channel %s :  %s %s" % (str(i+1), str(channel.value), channel.cc.decode()))
 
         # Enable the validator
-        if self.essp.ssp6_enable(self.sspC) != Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_enable(self.sspC) != Status.SSP_RESPONSE_OK.value:
             self.print_debug("Enable Failed")
             self.close()
 
         if setup_req.UnitType == 0x03:  # magic number
             for channel in enumerate(setup_req.ChannelData):
-                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED.code)
+                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED.value)
         else:
             if setup_req.UnitType == 0x06 or setup_req.UnitType == 0x07:
                 # Enable the payout unit
-                if self.essp.ssp6_enable_payout(self.sspC, setup_req.UnitType) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_enable_payout(self.sspC, setup_req.UnitType) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("Payout Enable Failed")
                     self.close()
 
             # Set the inhibits ( enable all note acceptance )
-            if self.essp.ssp6_set_inhibits(self.sspC, 0xFF, 0xFF) != Status.SSP_RESPONSE_OK:
+            if self.essp.ssp6_set_inhibits(self.sspC, 0xFF, 0xFF) != Status.SSP_RESPONSE_OK.value:
                 self.print_debug("Inhibits Failed")
                 self.close()
         t1 = threading.Thread(target=self.system_loop)
+        t1.setDaemon(True)
         t1.start()
 
     def close(self):
@@ -105,7 +108,7 @@ class eSSP(object):
 
     def reject(self):
         """Reject the bill if there is one"""
-        if self.essp.ssp6_reject != Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_reject(self.sspC) != Status.SSP_RESPONSE_OK.value:
             self.print_debug("Error to reject bill OR nothing to reject")
 
     def do_actions(self):
@@ -115,61 +118,61 @@ class eSSP(object):
             if action == Actions.ROUTE_TO_CASHBOX:  # Route to cashbox
                 if self.essp.ssp6_set_route(self.sspC, self.actions_args['routec_amount'],
                                             self.actions_args['routec_currency'],
-                                            Status.ENABLED.code) != Status.SSP_RESPONSE_OK:
+                                            Status.ENABLED.value) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("ERROR: Route to cashbox failed")
 
             elif action == Actions.ROUTE_TO_STORAGE:  # Route to storage
                 if self.essp.ssp6_set_route(self.sspC, self.actions_args['routes_amount'],
                                             self.actions_args['routes_currency'],
-                                            Status.ENABLED.code) != Status.SSP_RESPONSE_OK:
+                                            Status.ENABLED.value) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("ERROR: Route to storage failed")
 
             elif action == Actions.PAYOUT:  # Payout
                 if self.essp.ssp6_payout(self.sspC, self.actions_args['payout_amount'],
                                          self.actions_args['payout_currency'],
-                                         Status.SSP6_OPTION_BYTE_DO.code) != Status.SSP_RESPONSE_OK:
+                                         Status.SSP6_OPTION_BYTE_DO.value) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("ERROR: Payout failed")
                     # Checking the error
                     response_data = cast(self.essp.Status.SSP_get_response_data(self.sspC), POINTER(c_ubyte))
-                    if response_data[1] == Status.SMART_PAYOUT_NOT_ENOUGH:
+                    if response_data[1] == Status.SMART_PAYOUT_NOT_ENOUGH.value:
                         self.print_debug(Status.SMART_PAYOUT_NOT_ENOUGH)
-                    elif response_data[1] == Status.SMART_PAYOUT_EXACT_AMOUNT:
+                    elif response_data[1] == Status.SMART_PAYOUT_EXACT_AMOUNT.value:
                         self.print_debug(Status.SMART_PAYOUT_EXACT_AMOUNT)
-                    elif response_data[1] == Status.SMART_PAYOUT_BUSY:
+                    elif response_data[1] == Status.SMART_PAYOUT_BUSY.value:
                         self.print_debug(Status.SMART_PAYOUT_BUSY)
-                    elif response_data[1] == Status.SMART_PAYOUT_DISABLED:
+                    elif response_data[1] == Status.SMART_PAYOUT_DISABLED.value:
                         self.print_debug(Status.SMART_PAYOUT_DISABLED)
 
             elif action == Actions.PAYOUT_NEXT_NOTE_NV11:  # Payout next note ( NV11 only )
                 self.print_debug("Payout next note")
                 setup_req = Ssp6SetupRequestData()
-                if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("Setup Request Failed")
                 if setup_req.UnitType != 0x07:  # Maybe the version,  or something ( taken from the SDK C code )
                     self.print_debug("Payout next note is only valid for NV11")
-                if self.essp.ssp6_payout_note(self.sspC) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_payout_note(self.sspC) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("Payout next note failed")
                 
             elif action == Actions.STACK_NEXT_NOTE_NV11:  # Stack next note ( NV11 only )
                 setup_req = Ssp6SetupRequestData()
-                if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("Setup Request Failed")
                 if setup_req.UnitType != 0x07:  # Maybe the version,  or something ( taken from the SDK C code )
                     self.print_debug("Payout next note is only valid for NV11")
-                if self.essp.ssp6_stack_note(self.sspC) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_stack_note(self.sspC) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("Stack next note failed")
             
             elif action == Actions.DISABLE_VALIDATOR:  # Disable the validator
-                if self.essp.ssp6_disable(self.sspC) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_disable(self.sspC) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("ERROR: Disable failed")
 
             elif action == Actions.DISABLE_PAYOUT:  # Disable the payout device
-                if self.essp.ssp6_disable_payout(self.sspC) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_disable_payout(self.sspC) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("ERROR: Disable payout failed")
 
             elif action == Actions.GET_NOTE_AMOUNT:  # Get the note amount
                 if self.essp.ssp6_get_note_amount(self.sspC, self.actions_args['getnoteamount_amount'],
-                                                  self.actions_args['getnoteamount_currency']) != Status.SSP_RESPONSE_OK:
+                                                  self.actions_args['getnoteamount_currency']) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("ERROR: Can't read the note amount")
                     self.response_data['getnoteamount_response'] = 9999  # There can't be 9999 notes
                 else:
@@ -178,7 +181,7 @@ class eSSP(object):
                     self.response_data['getnoteamount_response'] = response_data[1]  # The number of note
 
             elif action == Actions.EMPTY_STORAGE:  # Empty the storage ( Send all to the cashbox )
-                if self.essp.ssp6_empty(self.sspC) != Status.SSP_RESPONSE_OK:
+                if self.essp.ssp6_empty(self.sspC) != Status.SSP_RESPONSE_OK.value:
                     self.print_debug("ERROR: Can't empty the storage")
                 else:
                     self.print_debug("Emptying, please wait...")
@@ -190,19 +193,19 @@ class eSSP(object):
     def enable_validator(self):
         """Enable the validator"""
         setup_req = Ssp6SetupRequestData()
-        if self.essp.ssp6_enable(self.sspC) != Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_enable(self.sspC) != Status.SSP_RESPONSE_OK.value:
             self.print_debug("ERROR: Enable failed")
             return False
         # SMART Hopper requires different inhibit commands, so use setup request to see if it is an SH
-        if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK:
+        if self.essp.ssp6_setup_request(self.sspC, byref(setup_req)) != Status.SSP_RESPONSE_OK.value:
             self.print_debug("Setup request failed")
             return False
         if setup_req.UnitType == 0x03:  # Magic number
             # SMART Hopper requires different inhibit commands
             for channel in setup_req.ChannelData:
-                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED.code)
+                self.essp.ssp6_set_coinmech_inhibits(self.sspC, channel.value, channel.cc, Status.ENABLED.value)
         else:
-            if self.essp.ssp6_set_inhibits(self.sspC, 0xFF, 0xFF) != Status.SSP_RESPONSE_OK:  # Magic numbers here too
+            if self.essp.ssp6_set_inhibits(self.sspC, 0xFF, 0xFF) != Status.SSP_RESPONSE_OK.value:  # Magic numbers here too
                 self.print_debug("Inhibits Failed")
                 return False
 
@@ -211,62 +214,62 @@ class eSSP(object):
 
         for events in self.poll.events:
             try:
-                self.print_debug(Status.events.event)
+                self.print_debug(events.event)
             except ValueError:
                 self.print_debug('Unknown status: {}'.format(events.event))
 
-            if events.event == Status.SSP_POLL_RESET:
+            if events.event == Status.SSP_POLL_RESET.value:
                 self.print_debug("Unit Reset")
-                if self.essp.ssp6_host_protocol(self.sspC, 0x06) != Status.SSP_RESPONSE_OK:  # Magic number
+                if self.essp.ssp6_host_protocol(self.sspC, 0x06) != Status.SSP_RESPONSE_OK.value:  # Magic number
                     self.print_debug("Host Protocol Failed")
                     self.close()
 
-            elif events.event == Status.SSP_POLL_READ:
+            elif events.event == Status.SSP_POLL_READ.value:
                 if events.data1 > 0:
                     self.print_debug("Note Read %s %s" % (events.data1, events.cc.decode()))
                     return events.data1, events.cc.decode(), events.event
 
-            elif events.event == Status.SSP_POLL_CREDIT:
+            elif events.event == Status.SSP_POLL_CREDIT.value:
                 self.print_debug("Credit %s %s" % (events.data1, events.cc.decode()))
                 return events.data1, events.cc.decode(), events.event
 
-            elif events.event == Status.SSP_POLL_INCOMPLETE_PAYOUT:
+            elif events.event == Status.SSP_POLL_INCOMPLETE_PAYOUT.value:
                 self.print_debug("Incomplete payout %s of %s %s" % (events.data1, events.data2, events.cc.decode()))
 
-            elif events.event == Status.SSP_POLL_INCOMPLETE_FLOAT:
+            elif events.event == Status.SSP_POLL_INCOMPLETE_FLOAT.value:
                 self.print_debug("Incomplete float %s of %s %s" % (events.data1, events.data2, events.cc.decode()))
 
-            elif events.event == Status.SSP_POLL_FRAUD_ATTEMPT:
+            elif events.event == Status.SSP_POLL_FRAUD_ATTEMPT.value:
                 self.print_debug("Fraud Attempt %s %s" % (events.data1, events.cc.decode()))
                 return events.data1, events.cc.decode(), events.event
 
-            elif events.event == Status.SSP_POLL_CALIBRATION_FAIL:
+            elif events.event == Status.SSP_POLL_CALIBRATION_FAIL.value:
                 self.print_debug("Calibration fail :")
-                if events.data1 == Status.NO_FAILUE:
+                if events.data1 == Status.NO_FAILUE.value:
                     self.print_debug("No failure")
-                if events.data1 == Status.SENSOR_FLAP:
+                if events.data1 == Status.SENSOR_FLAP.value:
                     self.print_debug("Optical sensor flap")
-                if events.data1 == Status.SENSOR_EXIT:
+                if events.data1 == Status.SENSOR_EXIT.value:
                     self.print_debug("Optical sensor exit")
-                if events.data1 == Status.SENSOR_COIL1:
+                if events.data1 == Status.SENSOR_COIL1.value:
                     self.print_debug("Coil sensor 1")
-                if events.data1 == Status.SENSOR_COIL2:
+                if events.data1 == Status.SENSOR_COIL2.value:
                     self.print_debug("Coil sensor 2")
-                if events.data1 == Status.NOT_INITIALISED:
+                if events.data1 == Status.NOT_INITIALISED.value:
                     self.print_debug("Unit not initialised")
-                if events.data1 == Status.CHECKSUM_ERROR:
+                if events.data1 == Status.CHECKSUM_ERROR.value:
                     self.print_debug("Data checksum error")
-                if events.data1 == Status.COMMAND_RECAL:
+                if events.data1 == Status.COMMAND_RECAL.value:
                     self.print_debug("Recalibration by command required")
                     self.essp.ssp6_run_calibration(self.sspC)
 
-            return 0, 0, Status.events.event
+            return 0, 0, events.event
         return 0, 0, Status.NO_EVENT
 
     def system_loop(self):  # Looping for getting the alive signal ( obligation in eSSP6 )
         while True:
             rsp_status = self.essp.ssp6_poll(self.sspC, byref(self.poll))  # Get the pool
-            if rsp_status != Status.SSP_RESPONSE_OK:  # If there's a problem, check wath is it
+            if rsp_status != Status.SSP_RESPONSE_OK.value:  # If there's a problem, check wath is it
                 if rsp_status == Status.SSP_RESPONSE_TIMEOUT:  # Timeout
                     self.print_debug("SSP Poll Timeout")
                     self.close()
@@ -275,7 +278,7 @@ class eSSP(object):
                     if rsp_status == 0xFA:
                         # The self has responded with key not set, so we should try to negotiate one
                         if self.essp.ssp6_setup_encryption(self.sspC,
-                                                           c_ulonglong(0x123456701234567)) == Status.SSP_RESPONSE_OK:
+                                                           c_ulonglong(0x123456701234567)) == Status.SSP_RESPONSE_OK.value:
                             self.print_debug("Encryption Setup")
                         else:
                             self.print_debug("Encryption Failed")
