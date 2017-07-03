@@ -111,7 +111,7 @@ class eSSP(object):
     def do_actions(self):
         while self.actions:
             action = self.actions.get()  # get and delete
-            self.print_debug(action)
+            self.print_debug(action.debug_message)
             if action == Actions.ROUTE_TO_CASHBOX:  # Route to cashbox
                 if self.essp.ssp6_set_route(self.sspC, self.actions_args['routec_amount'],
                                             self.actions_args['routec_currency'],
