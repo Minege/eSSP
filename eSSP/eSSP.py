@@ -4,7 +4,7 @@ from time import sleep
 import threading
 from six.moves import queue
 
-from .constants import Status, Actions
+from .constants import Status, FailureStatus, Actions
 
 
 class Ssp6ChannelData(Structure):
@@ -256,10 +256,9 @@ class eSSP(object):
 
     def parse_poll(self):
         """Parse the poll, for getting events"""
-
         for events in self.poll.events:
             try:
-                self.print_debug(events.event)
+                self.print_debug(Status(events.event))
             except ValueError:
                 self.print_debug('Unknown status: {}'.format(events.event))
 
@@ -301,22 +300,9 @@ class eSSP(object):
 
             elif events.event == Status.SSP_POLL_CALIBRATION_FAIL:
                 self.print_debug("Calibration fail :")
-                if events.data1 == Status.NO_FAILUE:
-                    self.print_debug("No failure")
-                if events.data1 == Status.SENSOR_FLAP:
-                    self.print_debug("Optical sensor flap")
-                if events.data1 == Status.SENSOR_EXIT:
-                    self.print_debug("Optical sensor exit")
-                if events.data1 == Status.SENSOR_COIL1:
-                    self.print_debug("Coil sensor 1")
-                if events.data1 == Status.SENSOR_COIL2:
-                    self.print_debug("Coil sensor 2")
-                if events.data1 == Status.NOT_INITIALISED
-                    self.print_debug("Unit not initialised")
-                if events.data1 == Status.CHECKSUM_ERROR:
-                    self.print_debug("Data checksum error")
+                self.print_debug(FailureStatus(events.data1))
                 if events.data1 == Status.COMMAND_RECAL:
-                    self.print_debug("Recalibration by command required")
+                    self.print_debug("trying to run autocalibration")
                     self.essp.ssp6_run_calibration(self.sspC)
 
             self.events.append(0, 0, events.event)

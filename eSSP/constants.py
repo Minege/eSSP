@@ -45,14 +45,6 @@ class Status(Enum):
     SSP_POLL_SMART_EMPTYING = 0xB3, "Smart emptying"
     SSP_POLL_SMART_EMPTIED = 0xB4, "Smart emptied"
     SSP_POLL_STORED = 0xDB, "Stored"
-    NO_FAILUE = 0x00, "No Failue"
-    SENSOR_FLAP = 0x01, "Sensor Flap"
-    SENSOR_EXIT = 0x02, "Sensor Exit"
-    SENSOR_COIL1 = 0x03, "Sensor coil 1"
-    SENSOR_COIL2 = 0x04, "Sensor coil 2"
-    NOT_INITIALISED = 0x05, "Not initialized"
-    CHECKSUM_ERROR = 0x06, "Checksum error"
-    COMMAND_RECAL = 0x07, "Command recall"
     SSP6_OPTION_BYTE_DO = 0x58, "Option Byte DO"
     NO_EVENT = 0xF9, "No event"
     SMART_PAYOUT_NOT_ENOUGH = 0x01, "Not enough value in smart payout"
@@ -63,6 +55,27 @@ class Status(Enum):
     # def __init__(self, code, debug_message):
         # self.code = code
         # self.debug_message = debug_message
+
+    def __int__(self):
+        return self.value
+
+    def __str__(self):
+        return self.debug_message
+
+    def __eq__(self, other):
+        return self.value == other
+
+class FailureStatus(Enum):
+    _init_ = 'value', 'debug_message'
+
+    NO_FAILUE = 0x00, "No Failure"
+    SENSOR_FLAP = 0x01, "Optical Sensor Flap"
+    SENSOR_EXIT = 0x02, "Optical Sensor Exit"
+    SENSOR_COIL1 = 0x03, "Coil sensor 1"
+    SENSOR_COIL2 = 0x04, "Coil sensor 2"
+    NOT_INITIALISED = 0x05, "Unit not initialized"
+    CHECKSUM_ERROR = 0x06, "Data checksum error"
+    COMMAND_RECAL = 0x07, "Recalibration by command required"
 
     def __int__(self):
         return self.value
@@ -98,3 +111,7 @@ class Actions(Enum):
 
     def __eq__(self, other):
         return self.value == other
+
+if __name__ == "__main__":
+    print(FailureStatus.SENSOR_FLAP == 1)
+    print(FailureStatus(1))
