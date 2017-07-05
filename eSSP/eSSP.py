@@ -334,6 +334,7 @@ class eSSP(object):
                         # We can safely exit because it will just stop our
                         # thread
                         exit(1)
+            self.parse_poll()
             self.do_actions()
             sleep(0.5)
 
