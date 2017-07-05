@@ -329,10 +329,7 @@ class eSSP(object):
 
                     else:
                         # Not theses two, stop the program
-                        self.print_debug(
-                            "SSP Poll Error {}".format(rsp_status))
-                        # We can safely exit because it will just stop our
-                        # thread
+                        raise Exception("SSP Poll Error {}".format(rsp_status))
                         exit(1)
             self.parse_poll()
             self.do_actions()
