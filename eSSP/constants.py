@@ -64,6 +64,9 @@ class Status(Enum):
 
     def __eq__(self, other):
         return self.value == other
+    
+    def __ne__(self, other):
+        return self.value != other
 
 class FailureStatus(Enum):
     _init_ = 'value', 'debug_message'
@@ -85,6 +88,9 @@ class FailureStatus(Enum):
 
     def __eq__(self, other):
         return self.value == other
+
+    def __ne__(self, other):
+        return self.value != other
 
 class Actions(Enum):
     _init_ = 'value', 'debug_message'
@@ -111,6 +117,9 @@ class Actions(Enum):
 
     def __eq__(self, other):
         return self.value == other
+
+    def __ne__(self, other):
+        return self.value != other
 
 if __name__ == "__main__":
     print(FailureStatus.SENSOR_FLAP == 1)
