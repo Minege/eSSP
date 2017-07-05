@@ -274,13 +274,13 @@ class eSSP(object):
                     self.print_debug(
                         "Note Read %s %s" %
                         (events.data1, events.cc.decode()))
-                    self.events.append(events.data1, events.cc.decode(), events.event)
+                    self.events.append((events.data1, events.cc.decode(), events.event))
 
             elif events.event == Status.SSP_POLL_CREDIT:
                 self.print_debug(
                     "Credit %s %s" %
                     (events.data1, events.cc.decode()))
-                self.events.append(events.data1, events.cc.decode(), events.event)
+                self.events.append((events.data1, events.cc.decode(), events.event))
 
             elif events.event == Status.SSP_POLL_INCOMPLETE_PAYOUT:
                 self.print_debug(
@@ -296,7 +296,7 @@ class eSSP(object):
                 self.print_debug(
                     "Fraud Attempt %s %s" %
                     (events.data1, events.cc.decode()))
-                self.events.append(events.data1, events.cc.decode(), events.event)
+                self.events.append((events.data1, events.cc.decode(), events.event))
 
             elif events.event == Status.SSP_POLL_CALIBRATION_FAIL:
                 self.print_debug("Calibration fail :")
@@ -305,8 +305,8 @@ class eSSP(object):
                     self.print_debug("trying to run autocalibration")
                     self.essp.ssp6_run_calibration(self.sspC)
 
-            self.events.append(0, 0, events.event)
-        self.events.append(0, 0, Status.NO_EVENT)
+            self.events.append((0, 0, events.event))
+        self.events.append((0, 0, Status.NO_EVENT))
 
     def system_loop(self):  # Looping for getting the alive signal ( obligation in eSSP6 )
         while True:
