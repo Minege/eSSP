@@ -259,7 +259,11 @@ class eSSP(object):
         """Parse the poll, for getting events"""
         for events in self.poll.events:
             try:
-                self.print_debug(Status(events.event))
+                if events.event == Status.DISABLED:
+                    pass # We don't print anything 
+                else:
+                    self.print_debug(Status(events.event))
+
             except ValueError:
                 self.print_debug('Unknown status: {}'.format(events.event))
 
