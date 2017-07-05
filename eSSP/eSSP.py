@@ -79,12 +79,11 @@ class eSSP(object):
             self.close()
             raise Exception("Setup request failed")
 
-        if self.debug:
-            print("Firmware %s " % (setup_req.FirmwareVersion.decode('utf8')))
-            print("Channels : ")
-            for i, channel in enumerate(setup_req.ChannelData):
-                print("Channel %s :  %s %s" %
-                      (str(i + 1), str(channel.value), channel.cc.decode()))
+        self.print_debug("Firmware %s " % (setup_req.FirmwareVersion.decode('utf8')))
+        self.print_debug("Channels : ")
+        for i, channel in enumerate(setup_req.ChannelData):
+            self.print_debug("Channel %s :  %s %s" %
+                  (str(i + 1), str(channel.value), channel.cc.decode()))
 
         # Enable the validator
         if self.essp.ssp6_enable(self.sspC) != Status.SSP_RESPONSE_OK.value:
@@ -125,7 +124,7 @@ class eSSP(object):
             self.print_debug("Error to reject bill OR nothing to reject")
 
     def do_actions(self):
-        while self.actions:
+        while not self.actions.empty():
             action = self.actions.get()  # get and delete
             self.print_debug(action.debug_message)
             if action == Actions.ROUTE_TO_CASHBOX:  # Route to cashbox
@@ -226,6 +225,8 @@ class eSSP(object):
                     self.print_debug("ERROR: Can't empty the storage")
                 else:
                     self.print_debug("Emptying, please wait...")
+            else:
+                self.print_debug("Unknow action")
 
     def print_debug(self, text):
         if self.debug:
@@ -263,10 +264,9 @@ class eSSP(object):
                 self.print_debug('Unknown status: {}'.format(events.event))
 
             if events.event == Status.SSP_POLL_RESET:
-                self.print_debug("Unit Reset")
                 if self.essp.ssp6_host_protocol(
                         self.sspC, 0x06) != Status.SSP_RESPONSE_OK:  # Magic number
-                    self.print_debug("Host Protocol Failed")
+                    raise Exception("Host Protocol Failed")
                     self.close()
 
             elif events.event == Status.SSP_POLL_READ:
@@ -326,7 +326,6 @@ class eSSP(object):
                             self.print_debug("Encryption Setup")
                         else:
                             self.print_debug("Encryption Failed")
-
                     else:
                         # Not theses two, stop the program
                         raise Exception("SSP Poll Error {}".format(rsp_status))
