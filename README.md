@@ -112,6 +112,6 @@ Set to storage 10 CHF and 20 CHF, putting 10 CHF and 20 CHF, and payout 10 CHF a
 
 **If you like my work, please consider donating**
 
-ETH : 0x821F26E5B65de91742B9FeA7c71874DAa78c5687
+ETH : 0x481F562BB46ff999fe493b82C44ba12E78172b9f
 
-BTC : 1QDBY8JfRUhZ5QBam7fejHhb3eJigrzhPh
+BTC : 3NYtx6b4JgPhcqLYe3urTq5Rpz3XTQkiuS
