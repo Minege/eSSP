@@ -1,7 +1,8 @@
 # !/usr/bin/env python3
+import threading
 from ctypes import *
 from time import sleep
-import threading
+
 from six.moves import queue
 
 from .constants import Status, FailureStatus, Actions
@@ -140,7 +141,7 @@ class eSSP(object):
                         self.sspC,
                         self.actions_args['routes_amount'],
                         self.actions_args['routes_currency'],
-                        Status.ENABLED.value) != Status.SSP_RESPONSE_OK:
+                        Status.DISABLED.value) != Status.SSP_RESPONSE_OK:
                     self.print_debug("ERROR: Route to storage failed")
 
             elif action == Actions.PAYOUT:  # Payout
