@@ -107,11 +107,3 @@ except KeyboardInterrupt:  # If user do CTRL+C
 ## Running example 1 with a NV200 :
 Set to storage 10 CHF and 20 CHF, putting 10 CHF and 20 CHF, and payout 10 CHF and 20 CHF.
 [![asciicast](https://asciinema.org/a/GgjOifW9VxCIjJjRPXMXDCUIv.png)](https://asciinema.org/a/GgjOifW9VxCIjJjRPXMXDCUIv)
-
-
-
-**If you like my work, please consider donating**
-
-ETH : 0x481F562BB46ff999fe493b82C44ba12E78172b9f
-
-BTC : 3NYtx6b4JgPhcqLYe3urTq5Rpz3XTQkiuS
