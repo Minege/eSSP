@@ -2,8 +2,9 @@
 //#include "stdafx.h"
 #include "../inc/itl_types.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include "Random.h"
-
+#include <sys/time.h>
 
 
 /*	Generates a large prime number by
@@ -108,22 +109,16 @@ unsigned long long GenerateRandomNumber(void)
 
 	LFSR(x);
 
-	n = GetRTSC();
+	n = GetSeed();
 
 	rnd ^= n^x;
 
 	ROT(rnd,7);
 
-	ret = (unsigned long long)GetRTSC() + (unsigned long long)rnd;
+	ret = (unsigned long long)GetSeed() + (unsigned long long)rnd;
 
 	return ret;
 }
-
-
-
-
-
-
 
 /*	Returns the Read Time Stamp Counter of the CPU
 |	The instruction returns in registers EDX:EAX the count of ticks from processor reset.
@@ -148,3 +143,12 @@ long long GetRTSC( void )
 
 }
 
+
+long long GetSeed( void )
+{
+	struct timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	long microsecond_time = (currentTime.tv_sec * (int)1e6 + currentTime.tv_usec) % __LONG_MAX__;
+	long long seed = microsecond_time*getpid() % __LONG_LONG_MAX__;
+	return seed;
+}

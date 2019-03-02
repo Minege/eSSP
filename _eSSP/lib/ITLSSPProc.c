@@ -182,7 +182,7 @@ void __attribute__ ((constructor)) my_init(void)
 		encPktCount[i] = 0;
 		sspSeq[i] = 0x80;
 	}
-    srand((int)GetRTSC());
+    srand((int)GetSeed());
     download_in_progress = 0;
 }
 void __attribute__ ((destructor)) my_fini(void)
