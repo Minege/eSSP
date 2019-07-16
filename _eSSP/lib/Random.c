@@ -124,31 +124,18 @@ unsigned long long GenerateRandomNumber(void)
 |	The instruction returns in registers EDX:EAX the count of ticks from processor reset.
 |	Added in Pentium. Opcode: 0F 31.				*/
 
-long long GetRTSC( void )
-{
-	/*int tmp1 = 0;
-	int tmp2 = 0;
-
-	__asm
-	{
-		RDTSC;			//Clock cycles since CPU started
-		mov tmp1, eax;
-		mov tmp2, edx;
-	}
-
-	return ((long long)tmp1 * (long long)tmp2);*/
-	long long result;
-	asm ("RDTSC" : "=A" (result));
-	return result;
-
-}
-
 
 long long GetSeed( void )
 {
+#ifdef __arm__
 	struct timeval currentTime;
 	gettimeofday(&currentTime, NULL);
 	long microsecond_time = (currentTime.tv_sec * (int)1e6 + currentTime.tv_usec) % __LONG_MAX__;
 	long long seed = microsecond_time*getpid() % __LONG_LONG_MAX__;
 	return seed;
+#else
+	long long result;
+	asm ("RDTSC" : "=A" (result));
+	return result;
+#endif
 }

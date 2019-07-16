@@ -17,7 +17,6 @@ unsigned char MillerRabin (long long n, long long trials);
 unsigned char IsItPrime (long long n, long long a);
 long long XpowYmodN(long long x, long long y, long long N);
 unsigned long long GenerateRandomNumber(void);
-long long GetRTSC( void ); //ARM-dependant
 long long GetSeed( void ); //NIX dependant
 
 
