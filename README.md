@@ -42,7 +42,7 @@ from eSSP import eSSP  # Import the library
 from time import sleep
 
 #  Create a new object ( Validator Object ) and initialize it ( In debug mode, so it will print debug infos )
-validator = eSSP(com_port="/dev/ttyUSB0", spp_address="0", nv11=False, debug=True)
+validator = eSSP(com_port="/dev/ttyUSB0", ssp_address="0", nv11=False, debug=True)
 
 
 def event_loop():
