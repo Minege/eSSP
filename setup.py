@@ -12,7 +12,6 @@ class ESSPBuild(build):
     def run(self):
         # run original build code
         build.run(self)
-
         cmd = [
             'make',
         ]
@@ -45,11 +44,11 @@ class ESSPInstall(install):
 
 
 setup(name="eSSP6",
-        version="1.0.8",
+        version="1.0.9",
         description="Encrypted Smiley Secure Protocol Python 3 Implementation",
 	long_description="Description is avaible in the github repository",
         author="Loan & Innovative Technology (Some of the C code)",
-        author_email="minege@protonmail.com",
+        author_email="minege02@gmail.com",
         platforms=["cygwin","osx"],
         license="MIT",
         url="https://github.com/Minege/eSSP",
