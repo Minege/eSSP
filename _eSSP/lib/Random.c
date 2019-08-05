@@ -127,7 +127,8 @@ unsigned long long GenerateRandomNumber(void)
 
 long long GetSeed( void )
 {
-#ifdef __arm__
+// arm32 or arm64 architectures
+#ifdef __arm__ || __aarch64__
 	struct timeval currentTime;
 	gettimeofday(&currentTime, NULL);
 	long microsecond_time = (currentTime.tv_sec * (int)1e6 + currentTime.tv_usec) % __LONG_MAX__;
