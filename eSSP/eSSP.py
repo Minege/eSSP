@@ -153,7 +153,7 @@ class eSSP(object):
                     self.print_debug("ERROR: Payout failed")
                     # Checking the error
                     response_data = cast(
-                        self.essp.Status.SSP_get_response_data(
+                        self.essp.ssp_get_response_data(
                             self.sspC), POINTER(c_ubyte))
                     if response_data[1] == Status.SMART_PAYOUT_NOT_ENOUGH:
                         self.print_debug(Status.SMART_PAYOUT_NOT_ENOUGH)
@@ -213,7 +213,7 @@ class eSSP(object):
                     self.response_data['getnoteamount_response'] = 9999
                 else:
                     response_data = cast(
-                        self.essp.Status.SSP_get_response_data(
+                        self.essp.ssp_get_response_data(
                             self.sspC), POINTER(c_ubyte))
                     self.print_debug(response_data[1])
                     # The number of note
