@@ -104,6 +104,10 @@ except KeyboardInterrupt:  # If user do CTRL+C
     print("Exiting")
     exit(0)
 ```
+
 ## Running example 1 with a NV200 :
 Set to storage 10 CHF and 20 CHF, putting 10 CHF and 20 CHF, and payout 10 CHF and 20 CHF.
 [![asciicast](https://asciinema.org/a/GgjOifW9VxCIjJjRPXMXDCUIv.png)](https://asciinema.org/a/GgjOifW9VxCIjJjRPXMXDCUIv)
+
+
+© Loan V.
